@@ -14,6 +14,10 @@ export function useChat() {
 
     ws.onopen = () => {
       store.connected = true
+      // Auto-join current room after (re)connect
+      if (store.currentRoomId) {
+        send({ type: 'join', roomId: store.currentRoomId })
+      }
     }
 
     ws.onmessage = (event) => {
