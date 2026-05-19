@@ -23,7 +23,7 @@ watch(
     <ChatRoomSidebar
       :rooms="store.rooms"
       :current-room-id="store.currentRoomId"
-      :online-users="store.currentOnlineUsers"
+      :online-users="store.currentOnlineUsers.filter((id) => id !== store.peerId)"
       :total-online="store.totalOnline"
       @select-room="(id: string) => navigateTo(`/chat/${id}`)"
       @create-room="createRoom"
@@ -37,6 +37,7 @@ watch(
         <span v-if="!store.connected" class="text-sm text-red-500 font-normal">
           (Connecting...)
         </span>
+        <span v-else class="text-sm text-green-500 font-normal"> (Connected) </span>
         <span class="flex-1" />
         <UBadge v-if="store.peerId" variant="subtle" size="sm">
           ID: {{ store.peerId.slice(0, 8) }}

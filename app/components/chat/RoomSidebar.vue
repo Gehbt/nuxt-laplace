@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { Room } from '~/types/chat'
 
-const _props = defineProps<{
+defineProps<{
   rooms: Room[]
   currentRoomId: string
   onlineUsers: string[]
