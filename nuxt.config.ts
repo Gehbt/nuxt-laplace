@@ -19,10 +19,14 @@ export default defineNuxtConfig({
   },
 
   compatibilityDate: '2026-05-15',
-
   nitro: {
     experimental: {
       websocket: true,
+    },
+  },
+  vite: {
+    optimizeDeps: {
+      include: ['@vue/devtools-core', '@vue/devtools-kit'],
     },
   },
 
