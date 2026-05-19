@@ -27,3 +27,6 @@ logs
 coverage/
 
 *.local
+
+# Chat data
+data/
