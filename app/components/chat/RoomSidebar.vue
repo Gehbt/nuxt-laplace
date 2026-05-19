@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { Room } from '~/types/chat'
 
-const props = defineProps<{
+const _props = defineProps<{
   rooms: Room[]
   currentRoomId: string
   onlineUsers: string[]
@@ -82,7 +82,7 @@ function handleCreateRoom() {
         />
         <div class="flex gap-2 justify-end">
           <UButton variant="ghost" @click="showCreateDialog = false"> Cancel </UButton>
-          <UButton @click="handleCreateRoom" :disabled="!newRoomName.trim()"> Create </UButton>
+          <UButton :disabled="!newRoomName.trim()" @click="handleCreateRoom"> Create </UButton>
         </div>
       </div>
     </div>

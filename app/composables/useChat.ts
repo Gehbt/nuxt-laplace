@@ -8,7 +8,7 @@ export function useChat() {
   function connect() {
     if (!import.meta.client) return
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
-    const url = `${protocol}//${window.location.host}/api/chat`
+    const url = `${protocol}//${window.location.host}/_ws`
 
     ws = new WebSocket(url)
 

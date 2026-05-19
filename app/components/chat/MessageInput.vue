@@ -39,6 +39,6 @@ function handleInput() {
       @keydown="handleKeydown"
       @input="handleInput"
     />
-    <UButton @click="sendMessage" :disabled="!input.trim()"> Send </UButton>
+    <UButton :disabled="!input.trim()" @click="sendMessage"> Send </UButton>
   </div>
 </template>
