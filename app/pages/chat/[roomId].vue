@@ -27,6 +27,7 @@ watch(
       :total-online="store.totalOnline"
       @select-room="(id: string) => navigateTo(`/chat/${id}`)"
       @create-room="createRoom"
+      @join-room="(id: string) => navigateTo(`/chat/${id}`)"
     />
     <div class="flex-1 flex flex-col">
       <div class="px-4 py-3 border-b border-gray-200 dark:border-gray-700 font-semibold">

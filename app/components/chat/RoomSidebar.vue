@@ -11,10 +11,13 @@ const _props = defineProps<{
 const emit = defineEmits<{
   selectRoom: [roomId: string]
   createRoom: [name: string]
+  joinRoom: [roomId: string]
 }>()
 
 const showCreateDialog = ref(false)
+const showJoinDialog = ref(false)
 const newRoomName = ref('')
+const joinRoomId = ref('')
 
 function handleCreateRoom() {
   const name = newRoomName.value.trim()
@@ -23,12 +26,18 @@ function handleCreateRoom() {
   newRoomName.value = ''
   showCreateDialog.value = false
 }
+
+function handleJoinRoom() {
+  const id = joinRoomId.value.trim().toLowerCase()
+  if (!id) return
+  emit('joinRoom', id)
+  joinRoomId.value = ''
+  showJoinDialog.value = false
+}
 </script>
 
 <template>
-  <div
-    class="w-64 flex-shrink-0 border-r border-gray-200 dark:border-gray-700 flex flex-col h-full"
-  >
+  <div class="w-64 shrink-0 border-r border-gray-200 dark:border-gray-700 flex flex-col h-full">
     <div class="p-4 border-b border-gray-200 dark:border-gray-700">
       <h2 class="text-lg font-semibold">Chat Rooms</h2>
       <p class="text-xs text-gray-500 mt-1">
@@ -69,6 +78,9 @@ function handleCreateRoom() {
       </div>
 
       <UButton block variant="outline" @click="showCreateDialog = true"> + New Room </UButton>
+      <UButton block variant="outline" class="mt-2" @click="showJoinDialog = true">
+        Join Room
+      </UButton>
     </div>
 
     <div
@@ -87,6 +99,26 @@ function handleCreateRoom() {
         <div class="flex gap-2 justify-end">
           <UButton variant="ghost" @click="showCreateDialog = false"> Cancel </UButton>
           <UButton :disabled="!newRoomName.trim()" @click="handleCreateRoom"> Create </UButton>
+        </div>
+      </div>
+    </div>
+
+    <div
+      v-if="showJoinDialog"
+      class="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+      @click.self="showJoinDialog = false"
+    >
+      <div class="bg-white dark:bg-gray-900 rounded-lg p-6 w-80 shadow-xl">
+        <h3 class="text-lg font-semibold mb-4">Join Room</h3>
+        <UInput
+          v-model="joinRoomId"
+          placeholder="Room ID"
+          class="mb-4"
+          @keydown.enter="handleJoinRoom"
+        />
+        <div class="flex gap-2 justify-end">
+          <UButton variant="ghost" @click="showJoinDialog = false"> Cancel </UButton>
+          <UButton :disabled="!joinRoomId.trim()" @click="handleJoinRoom"> Join </UButton>
         </div>
       </div>
     </div>
