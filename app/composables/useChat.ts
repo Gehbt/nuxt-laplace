@@ -1,5 +1,17 @@
 import type { ClientMessage } from '~/types/chat'
 
+const CLIENT_ID_KEY = 'chat-client-id'
+
+function getOrCreateClientId(): string {
+  if (!import.meta.client) return ''
+  let id = localStorage.getItem(CLIENT_ID_KEY)
+  if (!id) {
+    id = crypto.randomUUID()
+    localStorage.setItem(CLIENT_ID_KEY, id)
+  }
+  return id
+}
+
 export function useChat() {
   const store = useChatStore()
   let ws: WebSocket | null = null
@@ -7,8 +19,9 @@ export function useChat() {
 
   function connect() {
     if (!import.meta.client) return
+    const clientId = getOrCreateClientId()
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
-    const url = `${protocol}//${window.location.host}/_ws`
+    const url = `${protocol}//${window.location.host}/_ws?clientId=${clientId}`
 
     ws = new WebSocket(url)
 

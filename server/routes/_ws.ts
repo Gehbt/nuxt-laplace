@@ -1,10 +1,23 @@
 const onlineUsers = new Map<string, Set<string>>()
 const peerRooms = new Map<string, string>()
+const peerClientIds = new Map<string, string>()
+
+function getUserId(peer: { id: string }): string {
+  return peerClientIds.get(peer.id) || peer.id
+}
+
+function mapUsers(users: string[]): string[] {
+  return users.map((id) => peerClientIds.get(id) || id)
+}
 
 export default defineWebSocketHandler({
   open(peer) {
+    const url = new URL(peer.request?.url || '', 'http://localhost')
+    const clientId = url.searchParams.get('clientId') || peer.id
+    peerClientIds.set(peer.id, clientId)
+
     peer.subscribe('global')
-    peer.send({ type: 'welcome', peerId: peer.id })
+    peer.send({ type: 'welcome', peerId: getUserId(peer) })
     peer.send({ type: 'online-count', count: peerRooms.size })
     peer.publish('global', { type: 'online-count', count: peerRooms.size })
   },
@@ -24,6 +37,8 @@ export default defineWebSocketHandler({
       return
     }
 
+    const userId = getUserId(peer)
+
     switch (data.type) {
       case 'join': {
         const roomId = data.roomId as string
@@ -36,10 +51,10 @@ export default defineWebSocketHandler({
             onlineUsers.delete(prevRoom)
           }
           peer.unsubscribe(`room:${prevRoom}`)
-          const prevUsers = [...(onlineUsers.get(prevRoom) || [])]
+          const prevUsers = mapUsers([...(onlineUsers.get(prevRoom) || [])])
           peer.publish(`room:${prevRoom}`, {
             type: 'user-left',
-            peerId: peer.id,
+            peerId: userId,
             onlineUsers: prevUsers,
           })
         }
@@ -55,15 +70,15 @@ export default defineWebSocketHandler({
         peer.send({ type: 'history', messages })
         peer.send({ type: 'rooms', rooms })
 
-        const users = [...onlineUsers.get(roomId)!]
+        const users = mapUsers([...onlineUsers.get(roomId)!])
         peer.publish(`room:${roomId}`, {
           type: 'user-joined',
-          peerId: peer.id,
+          peerId: userId,
           onlineUsers: users,
         })
         peer.send({
           type: 'user-joined',
-          peerId: peer.id,
+          peerId: userId,
           onlineUsers: users,
         })
         break
@@ -72,7 +87,7 @@ export default defineWebSocketHandler({
       case 'chat': {
         const roomId = peerRooms.get(peer.id)
         if (!roomId || !data.content) return
-        const msg = await addMessage(roomId, data.content, peer.id)
+        const msg = await addMessage(roomId, data.content, userId)
         peer.send({ type: 'chat', message: msg })
         peer.publish(`room:${roomId}`, { type: 'chat', message: msg })
         break
@@ -83,7 +98,7 @@ export default defineWebSocketHandler({
         if (!roomId) return
         peer.publish(`room:${roomId}`, {
           type: 'typing',
-          peerId: peer.id,
+          peerId: userId,
         })
         break
       }
@@ -110,6 +125,7 @@ export default defineWebSocketHandler({
 
   close(peer) {
     const roomId = peerRooms.get(peer.id)
+    const userId = getUserId(peer)
     if (roomId) {
       onlineUsers.get(roomId)?.delete(peer.id)
       if (onlineUsers.get(roomId)?.size === 0) {
@@ -117,13 +133,14 @@ export default defineWebSocketHandler({
       }
       peerRooms.delete(peer.id)
       peer.unsubscribe(`room:${roomId}`)
-      const users = [...(onlineUsers.get(roomId) || [])]
+      const users = mapUsers([...(onlineUsers.get(roomId) || [])])
       peer.publish(`room:${roomId}`, {
         type: 'user-left',
-        peerId: peer.id,
+        peerId: userId,
         onlineUsers: users,
       })
     }
+    peerClientIds.delete(peer.id)
     peer.unsubscribe('global')
     peer.publish('global', { type: 'online-count', count: peerRooms.size })
   },
