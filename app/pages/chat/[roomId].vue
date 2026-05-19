@@ -19,7 +19,7 @@ watch(
 </script>
 
 <template>
-  <div class="h-full flex bg-white dark:bg-gray-900">
+  <div class="h-[calc(100dvh-4rem)] flex bg-white dark:bg-gray-900">
     <ChatRoomSidebar
       :rooms="store.rooms"
       :current-room-id="store.currentRoomId"
@@ -42,6 +42,12 @@ watch(
         :typing-peer-id="store.typingPeerId"
       />
       <ChatMessageInput @send="sendMessage" @typing="sendTyping" />
+    </div>
+    <div
+      v-if="store.peerId"
+      class="fixed bottom-4 right-4 bg-gray-100 dark:bg-gray-800 text-xs text-gray-500 dark:text-gray-400 px-3 py-1.5 rounded-full"
+    >
+      ID: {{ store.peerId.slice(0, 8) }}
     </div>
   </div>
 </template>

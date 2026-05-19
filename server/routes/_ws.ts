@@ -7,7 +7,7 @@ function getUserId(peer: { id: string }): string {
 }
 
 function mapUsers(users: string[]): string[] {
-  return users.map((id) => peerClientIds.get(id) || id)
+  return [...new Set(users.map((id) => peerClientIds.get(id) || id))]
 }
 
 export default defineWebSocketHandler({
