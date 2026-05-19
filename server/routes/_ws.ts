@@ -1,4 +1,5 @@
-const onlineUsers = new Map<string, Set<string>>()
+// roomId → Map<clientId, peerCount>
+const roomClientCounts = new Map<string, Map<string, number>>()
 const peerRooms = new Map<string, string>()
 const peerClientIds = new Map<string, string>()
 
@@ -6,8 +7,35 @@ function getUserId(peer: { id: string }): string {
   return peerClientIds.get(peer.id) || peer.id
 }
 
-function mapUsers(users: string[]): string[] {
-  return [...new Set(users.map((id) => peerClientIds.get(id) || id))]
+function getOnlineUsers(roomId: string): string[] {
+  return [...(roomClientCounts.get(roomId)?.keys() || [])]
+}
+
+function addClientToRoom(roomId: string, clientId: string) {
+  if (!roomClientCounts.has(roomId)) {
+    roomClientCounts.set(roomId, new Map())
+  }
+  const counts = roomClientCounts.get(roomId)!
+  counts.set(clientId, (counts.get(clientId) || 0) + 1)
+}
+
+function removeClientFromRoom(roomId: string, clientId: string) {
+  const counts = roomClientCounts.get(roomId)
+  if (!counts) return
+  const count = counts.get(clientId)
+  if (!count) return
+  if (count <= 1) {
+    counts.delete(clientId)
+    if (counts.size === 0) {
+      roomClientCounts.delete(roomId)
+    }
+  } else {
+    counts.set(clientId, count - 1)
+  }
+}
+
+function totalOnlineCount(): number {
+  return peerRooms.size
 }
 
 export default defineWebSocketHandler({
@@ -18,8 +46,8 @@ export default defineWebSocketHandler({
 
     peer.subscribe('global')
     peer.send({ type: 'welcome', peerId: getUserId(peer) })
-    peer.send({ type: 'online-count', count: peerRooms.size })
-    peer.publish('global', { type: 'online-count', count: peerRooms.size })
+    peer.send({ type: 'online-count', count: totalOnlineCount() })
+    peer.publish('global', { type: 'online-count', count: totalOnlineCount() })
   },
 
   async message(peer, message) {
@@ -46,31 +74,24 @@ export default defineWebSocketHandler({
 
         const prevRoom = peerRooms.get(peer.id)
         if (prevRoom) {
-          onlineUsers.get(prevRoom)?.delete(peer.id)
-          if (onlineUsers.get(prevRoom)?.size === 0) {
-            onlineUsers.delete(prevRoom)
-          }
+          removeClientFromRoom(prevRoom, userId)
           peer.unsubscribe(`room:${prevRoom}`)
-          const prevUsers = mapUsers([...(onlineUsers.get(prevRoom) || [])])
           peer.publish(`room:${prevRoom}`, {
             type: 'user-left',
             peerId: userId,
-            onlineUsers: prevUsers,
+            onlineUsers: getOnlineUsers(prevRoom),
           })
         }
 
         peerRooms.set(peer.id, roomId)
-        if (!onlineUsers.has(roomId)) {
-          onlineUsers.set(roomId, new Set())
-        }
-        onlineUsers.get(roomId)!.add(peer.id)
+        addClientToRoom(roomId, userId)
         peer.subscribe(`room:${roomId}`)
 
         const [messages, rooms] = await Promise.all([getMessages(roomId), getRooms()])
         peer.send({ type: 'history', messages })
         peer.send({ type: 'rooms', rooms })
 
-        const users = mapUsers([...onlineUsers.get(roomId)!])
+        const users = getOnlineUsers(roomId)
         peer.publish(`room:${roomId}`, {
           type: 'user-joined',
           peerId: userId,
@@ -127,21 +148,17 @@ export default defineWebSocketHandler({
     const roomId = peerRooms.get(peer.id)
     const userId = getUserId(peer)
     if (roomId) {
-      onlineUsers.get(roomId)?.delete(peer.id)
-      if (onlineUsers.get(roomId)?.size === 0) {
-        onlineUsers.delete(roomId)
-      }
+      removeClientFromRoom(roomId, userId)
       peerRooms.delete(peer.id)
       peer.unsubscribe(`room:${roomId}`)
-      const users = mapUsers([...(onlineUsers.get(roomId) || [])])
       peer.publish(`room:${roomId}`, {
         type: 'user-left',
         peerId: userId,
-        onlineUsers: users,
+        onlineUsers: getOnlineUsers(roomId),
       })
     }
     peerClientIds.delete(peer.id)
     peer.unsubscribe('global')
-    peer.publish('global', { type: 'online-count', count: peerRooms.size })
+    peer.publish('global', { type: 'online-count', count: totalOnlineCount() })
   },
 })
