@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import userIcon from '~/assets/images/user-icon/common.png'
+
 const emit = defineEmits<{
   send: [content: string]
   typing: []
@@ -32,6 +34,8 @@ function handleInput() {
 
 <template>
   <div class="flex gap-2 p-4 border-t border-gray-200 dark:border-gray-700">
+    <UAvatar class="w-8 h-8" :src="userIcon"></UAvatar>
+    <div class="w-1"></div>
     <UInput
       v-model="input"
       placeholder="Type a message..."
