@@ -30,11 +30,17 @@ watch(
       @join-room="(id: string) => navigateTo(`/chat/${id}`)"
     />
     <div class="flex-1 flex flex-col">
-      <div class="px-4 py-3 border-b border-gray-200 dark:border-gray-700 font-semibold">
-        # {{ store.currentRoomId }}
-        <span v-if="!store.connected" class="ml-2 text-sm text-red-500 font-normal">
+      <div
+        class="px-4 py-3 border-b border-gray-200 dark:border-gray-700 font-semibold flex items-center gap-2"
+      >
+        <span># {{ store.currentRoomId }}</span>
+        <span v-if="!store.connected" class="text-sm text-red-500 font-normal">
           (Connecting...)
         </span>
+        <span class="flex-1" />
+        <UBadge v-if="store.peerId" variant="subtle" size="sm">
+          ID: {{ store.peerId.slice(0, 8) }}
+        </UBadge>
       </div>
       <ChatMessageList
         :messages="store.currentMessages"
@@ -42,12 +48,6 @@ watch(
         :typing-peer-id="store.typingPeerId"
       />
       <ChatMessageInput @send="sendMessage" @typing="sendTyping" />
-    </div>
-    <div
-      v-if="store.peerId"
-      class="fixed bottom-4 right-4 bg-gray-100 dark:bg-gray-800 text-xs text-gray-500 dark:text-gray-400 px-3 py-1.5 rounded-full"
-    >
-      ID: {{ store.peerId.slice(0, 8) }}
     </div>
   </div>
 </template>
