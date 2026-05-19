@@ -8,7 +8,7 @@ const input = ref('')
 let typingTimer: ReturnType<typeof setTimeout> | null = null
 
 function handleKeydown(e: KeyboardEvent) {
-  if (e.key === 'Enter' && !e.shiftKey) {
+  if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) {
     e.preventDefault()
     sendMessage()
   }
