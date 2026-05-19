@@ -19,7 +19,7 @@ watch(
 </script>
 
 <template>
-  <div class="h-[calc(100dvh-4rem)] flex bg-white dark:bg-gray-900">
+  <div class="h-full flex bg-white dark:bg-gray-900">
     <ChatRoomSidebar
       :rooms="store.rooms"
       :current-room-id="store.currentRoomId"
