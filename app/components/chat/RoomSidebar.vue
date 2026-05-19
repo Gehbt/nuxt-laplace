@@ -5,6 +5,7 @@ const _props = defineProps<{
   rooms: Room[]
   currentRoomId: string
   onlineUsers: string[]
+  totalOnline: number
 }>()
 
 const emit = defineEmits<{
@@ -30,6 +31,9 @@ function handleCreateRoom() {
   >
     <div class="p-4 border-b border-gray-200 dark:border-gray-700">
       <h2 class="text-lg font-semibold">Chat Rooms</h2>
+      <p class="text-xs text-gray-500 mt-1">
+        {{ totalOnline }} user{{ totalOnline !== 1 ? 's' : '' }} connected
+      </p>
     </div>
 
     <div class="flex-1 overflow-y-auto">

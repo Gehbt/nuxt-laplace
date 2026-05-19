@@ -5,6 +5,8 @@ export default defineWebSocketHandler({
   open(peer) {
     peer.subscribe('global')
     peer.send({ type: 'welcome', peerId: peer.id })
+    peer.send({ type: 'online-count', count: peerRooms.size })
+    peer.publish('global', { type: 'online-count', count: peerRooms.size })
   },
 
   async message(peer, message) {
@@ -123,5 +125,6 @@ export default defineWebSocketHandler({
       })
     }
     peer.unsubscribe('global')
+    peer.publish('global', { type: 'online-count', count: peerRooms.size })
   },
 })

@@ -26,3 +26,4 @@ export type ServerMessage =
   | { type: 'history'; messages: ChatMessage[] }
   | { type: 'room-created'; room: Room }
   | { type: 'rooms'; rooms: Room[] }
+  | { type: 'online-count'; count: number }

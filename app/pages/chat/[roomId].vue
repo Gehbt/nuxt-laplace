@@ -24,6 +24,7 @@ watch(
       :rooms="store.rooms"
       :current-room-id="store.currentRoomId"
       :online-users="store.currentOnlineUsers"
+      :total-online="store.totalOnline"
       @select-room="(id: string) => navigateTo(`/chat/${id}`)"
       @create-room="createRoom"
     />

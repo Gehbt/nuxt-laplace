@@ -10,6 +10,7 @@ export const useChatStore = defineStore('chat', {
     onlineUsers: {} as Record<string, string[]>,
     typingPeerId: '' as string,
     connected: false,
+    totalOnline: 0,
   }),
 
   getters: {
@@ -68,6 +69,10 @@ export const useChatStore = defineStore('chat', {
 
         case 'rooms':
           this.rooms = msg.rooms
+          break
+
+        case 'online-count':
+          this.totalOnline = msg.count
           break
       }
     },
