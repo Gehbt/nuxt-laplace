@@ -2,6 +2,10 @@
 const roomClientCounts = new Map<string, Map<string, number>>()
 const peerRooms = new Map<string, string>()
 const peerClientIds = new Map<string, string>()
+// clientId → peerCount (across all tabs)
+const clientPeerCounts = new Map<string, number>()
+// peer.id → peer
+const allPeers = new Map<string, { id: string; send: (data: unknown) => void }>()
 
 function getUserId(peer: { id: string }): string {
   return peerClientIds.get(peer.id) || peer.id
@@ -35,7 +39,23 @@ function removeClientFromRoom(roomId: string, clientId: string) {
 }
 
 function totalOnlineCount(): number {
-  return peerRooms.size
+  return clientPeerCounts.size
+}
+
+function broadcastToRoom(roomId: string, data: unknown, excludePeerId?: string) {
+  for (const [peerId, room] of peerRooms) {
+    if (peerId !== excludePeerId && room === roomId) {
+      allPeers.get(peerId)?.send(data)
+    }
+  }
+}
+
+function broadcastGlobal(data: unknown, excludePeerId?: string) {
+  for (const [peerId, peer] of allPeers) {
+    if (peerId !== excludePeerId) {
+      peer.send(data)
+    }
+  }
 }
 
 export default defineWebSocketHandler({
@@ -43,11 +63,12 @@ export default defineWebSocketHandler({
     const url = new URL(peer.request?.url || '', 'http://localhost')
     const clientId = url.searchParams.get('clientId') || peer.id
     peerClientIds.set(peer.id, clientId)
+    clientPeerCounts.set(clientId, (clientPeerCounts.get(clientId) || 0) + 1)
+    allPeers.set(peer.id, peer)
 
-    peer.subscribe('global')
     peer.send({ type: 'welcome', peerId: getUserId(peer) })
     peer.send({ type: 'online-count', count: totalOnlineCount() })
-    peer.publish('global', { type: 'online-count', count: totalOnlineCount() })
+    broadcastGlobal({ type: 'online-count', count: totalOnlineCount() }, peer.id)
   },
 
   async message(peer, message) {
@@ -75,28 +96,39 @@ export default defineWebSocketHandler({
         const prevRoom = peerRooms.get(peer.id)
         if (prevRoom) {
           removeClientFromRoom(prevRoom, userId)
-          peer.unsubscribe(`room:${prevRoom}`)
-          peer.publish(`room:${prevRoom}`, {
-            type: 'user-left',
+          broadcastToRoom(
+            prevRoom,
+            {
+              type: 'user-left',
+              peerId: userId,
+              onlineUsers: getOnlineUsers(prevRoom),
+            },
+            peer.id,
+          )
+          peer.send({
+            type: 'room-left',
+            roomId: prevRoom,
             peerId: userId,
-            onlineUsers: getOnlineUsers(prevRoom),
           })
         }
 
         peerRooms.set(peer.id, roomId)
         addClientToRoom(roomId, userId)
-        peer.subscribe(`room:${roomId}`)
 
         const [messages, rooms] = await Promise.all([getMessages(roomId), getRooms()])
         peer.send({ type: 'history', messages })
         peer.send({ type: 'rooms', rooms })
 
         const users = getOnlineUsers(roomId)
-        peer.publish(`room:${roomId}`, {
-          type: 'user-joined',
-          peerId: userId,
-          onlineUsers: users,
-        })
+        broadcastToRoom(
+          roomId,
+          {
+            type: 'user-joined',
+            peerId: userId,
+            onlineUsers: users,
+          },
+          peer.id,
+        )
         peer.send({
           type: 'user-joined',
           peerId: userId,
@@ -110,17 +142,21 @@ export default defineWebSocketHandler({
         if (!roomId || !data.content) return
         const msg = await addMessage(roomId, data.content, userId)
         peer.send({ type: 'chat', message: msg })
-        peer.publish(`room:${roomId}`, { type: 'chat', message: msg })
+        broadcastToRoom(roomId, { type: 'chat', message: msg }, peer.id)
         break
       }
 
       case 'typing': {
         const roomId = peerRooms.get(peer.id)
         if (!roomId) return
-        peer.publish(`room:${roomId}`, {
-          type: 'typing',
-          peerId: userId,
-        })
+        broadcastToRoom(
+          roomId,
+          {
+            type: 'typing',
+            peerId: userId,
+          },
+          peer.id,
+        )
         break
       }
 
@@ -137,8 +173,8 @@ export default defineWebSocketHandler({
         const rooms = await getRooms()
         peer.send({ type: 'room-created', room })
         peer.send({ type: 'rooms', rooms })
-        peer.publish('global', { type: 'room-created', room })
-        peer.publish('global', { type: 'rooms', rooms })
+        broadcastGlobal({ type: 'room-created', room }, peer.id)
+        broadcastGlobal({ type: 'rooms', rooms }, peer.id)
         break
       }
     }
@@ -150,15 +186,23 @@ export default defineWebSocketHandler({
     if (roomId) {
       removeClientFromRoom(roomId, userId)
       peerRooms.delete(peer.id)
-      peer.unsubscribe(`room:${roomId}`)
-      peer.publish(`room:${roomId}`, {
-        type: 'user-left',
-        peerId: userId,
-        onlineUsers: getOnlineUsers(roomId),
-      })
+      broadcastToRoom(
+        roomId,
+        {
+          type: 'user-left',
+          peerId: userId,
+          onlineUsers: getOnlineUsers(roomId),
+        },
+        peer.id,
+      )
     }
     peerClientIds.delete(peer.id)
-    peer.unsubscribe('global')
-    peer.publish('global', { type: 'online-count', count: totalOnlineCount() })
+    const pCount = clientPeerCounts.get(userId)
+    if (pCount !== undefined) {
+      if (pCount <= 1) clientPeerCounts.delete(userId)
+      else clientPeerCounts.set(userId, pCount - 1)
+    }
+    allPeers.delete(peer.id)
+    broadcastGlobal({ type: 'online-count', count: totalOnlineCount() }, peer.id)
   },
 })

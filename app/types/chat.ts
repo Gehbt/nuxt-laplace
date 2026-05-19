@@ -27,3 +27,4 @@ export type ServerMessage =
   | { type: 'room-created'; room: Room }
   | { type: 'rooms'; rooms: Room[] }
   | { type: 'online-count'; count: number }
+  | { type: 'room-left'; roomId: string; peerId: string }

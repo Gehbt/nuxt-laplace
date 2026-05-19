@@ -74,6 +74,16 @@ export const useChatStore = defineStore('chat', {
         case 'online-count':
           this.totalOnline = msg.count
           break
+
+        case 'room-left':
+          if (msg.peerId === this.peerId) {
+            useToast().add({
+              title: `你已经退出 ${msg.roomId} 房间`,
+              color: 'neutral',
+              icon: 'i-lucide-log-out',
+            })
+          }
+          break
       }
     },
   },
