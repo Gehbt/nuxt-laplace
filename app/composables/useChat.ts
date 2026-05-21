@@ -22,7 +22,7 @@ function getOrCreateClientId(): string {
 export function useChat() {
   const store = useChatStore()
   let ws: WebSocket | null = null
-  let reconnectTimer: ReturnType<typeof setTimeout> | null = null
+  let reconnectTimer: number | null = null
 
   function connect() {
     if (!import.meta.client) return
@@ -51,7 +51,7 @@ export function useChat() {
 
     ws.onclose = () => {
       store.connected = false
-      reconnectTimer = setTimeout(connect, 3000)
+      reconnectTimer = window.setTimeout(connect, 3000)
     }
 
     ws.onerror = () => {
@@ -88,7 +88,7 @@ export function useChat() {
 
   function disconnect() {
     if (reconnectTimer) {
-      clearTimeout(reconnectTimer)
+      window.clearTimeout(reconnectTimer)
       reconnectTimer = null
     }
     if (ws) {
