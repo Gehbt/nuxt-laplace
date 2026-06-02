@@ -3,5 +3,6 @@ export default defineNitroPlugin(async () => {
   if (rooms.length === 0) {
     await createRoom('General')
     await createRoom('Random')
+    await createRoom('DeepSeek')
   }
 })
