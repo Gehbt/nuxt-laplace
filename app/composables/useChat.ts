@@ -86,6 +86,10 @@ export function useChat() {
     send({ type: 'create-room', name })
   }
 
+  function stopAi() {
+    send({ type: 'stop-ai' })
+  }
+
   function disconnect() {
     if (reconnectTimer) {
       window.clearTimeout(reconnectTimer)
@@ -108,5 +112,6 @@ export function useChat() {
     requestHistory,
     createRoom,
     disconnect,
+    stopAi,
   }
 }
