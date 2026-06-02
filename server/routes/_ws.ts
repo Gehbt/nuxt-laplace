@@ -1,3 +1,7 @@
+import { streamText } from 'ai'
+import { getDeepSeekProvider } from '../utils/ai'
+import { getMessages, addMessage } from '../utils/storage'
+
 // roomId → Map<clientId, peerCount>
 const roomClientCounts = new Map<string, Map<string, number>>()
 const peerRooms = new Map<string, string>()
@@ -55,6 +59,89 @@ function broadcastGlobal(data: unknown, excludePeerId?: string) {
     if (peerId !== excludePeerId) {
       peer.send(data)
     }
+  }
+}
+
+const activeAiStreams = new Map<string, AbortController>()
+const activeAiMsgIds = new Map<string, string>()
+
+const AI_PEER_ID = 'ai:deepseek'
+const AI_ROOM_ID = 'deepseek'
+const AI_CONTEXT_LIMIT = 20
+
+async function handleAiChat(roomId: string) {
+  if (roomId !== AI_ROOM_ID) return
+
+  // Abort any existing stream for this room
+  const existing = activeAiStreams.get(roomId)
+  if (existing) {
+    existing.abort()
+    activeAiStreams.delete(roomId)
+  }
+
+  const controller = new AbortController()
+  activeAiStreams.set(roomId, controller)
+
+  try {
+    const history = await getMessages(roomId, undefined, AI_CONTEXT_LIMIT)
+    const contextMessages = history.map((msg) => ({
+      role: (msg.peerId === AI_PEER_ID ? 'assistant' : 'user') as 'assistant' | 'user',
+      content: msg.content,
+    }))
+
+    const aiMsgId = crypto.randomUUID()
+    const startTime = Date.now()
+
+    activeAiMsgIds.set(roomId, aiMsgId)
+
+    broadcastToRoom(roomId, {
+      type: 'ai-start',
+      id: aiMsgId,
+      peerId: AI_PEER_ID,
+      roomId,
+      timestamp: startTime,
+    })
+
+    const provider = getDeepSeekProvider()
+    let fullContent = ''
+
+    const result = streamText({
+      model: provider('deepseek-v4-pro'),
+      system: 'You are a helpful assistant.',
+      messages: contextMessages,
+      abortSignal: controller.signal,
+    })
+
+    for await (const chunk of result.textStream) {
+      if (controller.signal.aborted) break
+      fullContent += chunk
+      broadcastToRoom(roomId, {
+        type: 'ai-chunk',
+        id: aiMsgId,
+        text: chunk,
+        roomId,
+        timestamp: Date.now(),
+      })
+    }
+
+    if (!controller.signal.aborted) {
+      broadcastToRoom(roomId, {
+        type: 'ai-end',
+        id: aiMsgId,
+        roomId,
+        timestamp: Date.now(),
+      })
+
+      // Store the complete AI message in DB
+      await addMessage(roomId, fullContent, AI_PEER_ID)
+    }
+  } catch (err) {
+    if (!controller.signal.aborted) {
+      console.error('AI stream error:', err)
+    }
+  } finally {
+    activeAiStreams.delete(roomId)
+    activeAiMsgIds.delete(roomId)
   }
 }
 
@@ -143,6 +230,30 @@ export default defineWebSocketHandler({
         const msg = await addMessage(roomId, data.content, userId)
         peer.send({ type: 'chat', message: msg })
         broadcastToRoom(roomId, { type: 'chat', message: msg }, peer.id)
+
+        // Trigger AI response for DeepSeek room
+        if (roomId === AI_ROOM_ID) {
+          handleAiChat(roomId)
+        }
+        break
+      }
+
+      case 'stop-ai': {
+        const roomId = peerRooms.get(peer.id)
+        if (!roomId) return
+        const activeController = activeAiStreams.get(roomId)
+        if (activeController) {
+          activeController.abort()
+          const aiMsgId = activeAiMsgIds.get(roomId) || ''
+          activeAiStreams.delete(roomId)
+          activeAiMsgIds.delete(roomId)
+          broadcastToRoom(roomId, {
+            type: 'ai-stop',
+            id: aiMsgId,
+            roomId,
+            timestamp: Date.now(),
+          })
+        }
         break
       }
 
