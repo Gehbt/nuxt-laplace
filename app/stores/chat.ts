@@ -10,6 +10,7 @@ export const useChatStore = defineStore('chat', {
     onlineUsers: {} as Record<string, string[]>,
     typingPeerId: '' as string,
     connected: false,
+    isAiGenerating: false,
     totalOnline: 0,
   }),
 
@@ -84,6 +85,47 @@ export const useChatStore = defineStore('chat', {
             })
           }
           break
+
+        case 'ai-start': {
+          this.isAiGenerating = true
+          if (!this.messages[msg.roomId]) {
+            this.messages[msg.roomId] = []
+          }
+          this.messages[msg.roomId].push({
+            id: msg.id,
+            content: '',
+            peerId: msg.peerId,
+            timestamp: msg.timestamp,
+          })
+          break
+        }
+
+        case 'ai-chunk': {
+          const chunkMessages = this.messages[msg.roomId]
+          if (chunkMessages) {
+            const target = chunkMessages.find((m) => m.id === msg.id)
+            if (target) {
+              target.content += msg.text
+            }
+          }
+          break
+        }
+
+        case 'ai-end':
+          this.isAiGenerating = false
+          break
+
+        case 'ai-stop': {
+          this.isAiGenerating = false
+          const stopMessages = this.messages[msg.roomId]
+          if (stopMessages) {
+            const idx = stopMessages.findIndex((m) => m.id === msg.id)
+            if (idx !== -1) {
+              stopMessages.splice(idx, 1)
+            }
+          }
+          break
+        }
       }
     },
   },
