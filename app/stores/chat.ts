@@ -88,10 +88,9 @@ export const useChatStore = defineStore('chat', {
 
         case 'ai-start': {
           this.isAiGenerating = true
-          if (!this.messages[msg.roomId]) {
-            this.messages[msg.roomId] = []
-          }
-          this.messages[msg.roomId].push({
+          const roomMsgs = this.messages[msg.roomId] || []
+          this.messages[msg.roomId] = roomMsgs
+          roomMsgs.push({
             id: msg.id,
             content: '',
             peerId: msg.peerId,

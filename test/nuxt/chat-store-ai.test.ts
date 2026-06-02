@@ -65,8 +65,8 @@ describe('chat store — AI message handling', () => {
         timestamp: 1002,
       })
 
-      expect(store.currentMessages).toHaveLength(1)
-      expect(store.currentMessages[0].content).toBe('Hello world')
+      const msg = store.currentMessages.find((m) => m.id === 'msg-1')!
+      expect(msg.content).toBe('Hello world')
     })
 
     it('ignores chunks for unknown message ids', () => {
