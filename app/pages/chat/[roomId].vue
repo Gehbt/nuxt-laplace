@@ -5,7 +5,7 @@ const route = useRoute()
 const roomId = computed(() => route.params.roomId as string)
 
 const store = useChatStore()
-const { joinRoom, sendMessage, sendTyping, createRoom } = useChat()
+const { joinRoom, sendMessage, sendTyping, createRoom, stopAi } = useChat()
 
 watch(
   roomId,
@@ -48,7 +48,7 @@ watch(
         :current-peer-id="store.peerId"
         :typing-peer-id="store.typingPeerId"
       />
-      <ChatMessageInput @send="sendMessage" @typing="sendTyping" />
+      <ChatMessageInput @send="sendMessage" @typing="sendTyping" @stop="stopAi" />
     </div>
   </div>
 </template>
