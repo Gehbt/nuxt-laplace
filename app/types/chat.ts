@@ -16,6 +16,7 @@ export type ClientMessage =
   | { type: 'typing' }
   | { type: 'history'; roomId: string; before?: number; limit?: number }
   | { type: 'create-room'; name: string }
+  | { type: 'stop-ai' }
 
 export type ServerMessage =
   | { type: 'welcome'; peerId: string }
@@ -28,3 +29,7 @@ export type ServerMessage =
   | { type: 'rooms'; rooms: Room[] }
   | { type: 'online-count'; count: number }
   | { type: 'room-left'; roomId: string; peerId: string }
+  | { type: 'ai-start'; id: string; peerId: 'ai:deepseek'; roomId: string; timestamp: number }
+  | { type: 'ai-chunk'; id: string; text: string; roomId: string; timestamp: number }
+  | { type: 'ai-end'; id: string; roomId: string; timestamp: number }
+  | { type: 'ai-stop'; id: string; roomId: string; timestamp: number }
