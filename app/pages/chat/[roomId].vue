@@ -11,12 +11,30 @@ const store = useChatStore()
 const { joinRoom, sendMessage, sendTyping, createRoom, stopAi } = useChat()
 
 // DeepSeek AI chat (HTTP streaming via Chat class)
+const AI_STORAGE_KEY = 'deepseek-ai-chat-messages'
 const isDeepSeekRoom = computed(() => roomId.value === 'deepseek')
 
 const aiInput = ref('')
+
+function loadAiMessages() {
+  if (!import.meta.client) return []
+  try {
+    return JSON.parse(localStorage.getItem(AI_STORAGE_KEY) || '[]')
+  } catch {
+    return []
+  }
+}
+
 const aiChat = new Chat({
   transport: new DefaultChatTransport({ api: '/api/deepseek-chat' }),
+  messages: loadAiMessages(),
 })
+
+function saveAiMessages() {
+  if (!import.meta.client) return
+  localStorage.setItem(AI_STORAGE_KEY, JSON.stringify(aiChat.messages))
+}
+
 const aiLoading = computed(() => aiChat.status === 'streaming' || aiChat.status === 'submitted')
 
 function aiHandleSubmit(e?: Event) {
@@ -33,6 +51,20 @@ function aiHandleKeydown(e: KeyboardEvent) {
     aiHandleSubmit()
   }
 }
+
+// Auto-save AI messages to localStorage
+let aiSaveTimer: ReturnType<typeof setInterval> | null = null
+onMounted(() => {
+  aiSaveTimer = setInterval(() => {
+    if (isDeepSeekRoom.value && aiChat.messages.length > 0) {
+      saveAiMessages()
+    }
+  }, 1000)
+})
+onUnmounted(() => {
+  if (aiSaveTimer) clearInterval(aiSaveTimer)
+  if (isDeepSeekRoom.value) saveAiMessages()
+})
 
 // Join WebSocket room for all rooms (sidebar needs it)
 watch(
