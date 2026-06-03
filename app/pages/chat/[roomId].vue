@@ -1,10 +1,13 @@
 <script setup lang="ts">
-import { DefaultChatTransport } from 'ai'
 import { Chat } from '@ai-sdk/vue'
-import { useChatStore } from '@/stores/chat'
-import { useChat } from '~/composables/useChat'
+import { DefaultChatTransport } from 'ai'
+
+import type { AiModelSettingField } from '~/components/chat/AiModelSettings.vue'
 import type { ChatMessage } from '~/types/chat'
+
+import { useChatStore } from '@/stores/chat'
 import userIcon from '~/assets/images/user-icon/common.png'
+import { useChat } from '~/composables/useChat'
 
 definePageMeta({ layout: 'blank' })
 
@@ -20,6 +23,56 @@ const AI_SELF_PEER_ID = '__ai_self__'
 const isDeepSeekRoom = computed(() => roomId.value === 'deepseek')
 
 const aiInput = ref('')
+
+const deepseekFields: AiModelSettingField[] = [
+  {
+    key: 'thinkingType',
+    label: 'Thinking',
+    type: 'select',
+    options: [
+      { label: 'Adaptive', value: 'adaptive' },
+      { label: 'Enabled', value: 'enabled' },
+      { label: 'Disabled', value: 'disabled' },
+    ],
+  },
+  {
+    key: 'reasoningEffort',
+    label: 'Reasoning Effort',
+    type: 'select',
+    options: [
+      { label: 'Low', value: 'low' },
+      { label: 'Medium', value: 'medium' },
+      { label: 'High', value: 'high' },
+      { label: 'Extra High', value: 'xhigh' },
+      { label: 'Max', value: 'max' },
+    ],
+  },
+]
+
+const DEEPSEEK_OPTIONS_KEY = 'deepseek-model-options'
+const deepseekOptionsDefaults = { thinkingType: 'enabled', reasoningEffort: 'high' }
+
+function loadDeepseekOptions() {
+  if (!import.meta.client) return { ...deepseekOptionsDefaults }
+  try {
+    return {
+      ...deepseekOptionsDefaults,
+      ...JSON.parse(localStorage.getItem(DEEPSEEK_OPTIONS_KEY) || '{}'),
+    }
+  } catch {
+    return { ...deepseekOptionsDefaults }
+  }
+}
+
+const deepseekOptions = ref(loadDeepseekOptions())
+
+watch(
+  deepseekOptions,
+  (val) => {
+    if (import.meta.client) localStorage.setItem(DEEPSEEK_OPTIONS_KEY, JSON.stringify(val))
+  },
+  { deep: true },
+)
 
 function loadAiMessages() {
   if (!import.meta.client) return []
@@ -60,7 +113,19 @@ const aiTypingPeerId = computed(() => (aiLoading.value ? 'ai:deepseek' : ''))
 function aiSend() {
   const text = aiInput.value.trim()
   if (!text || aiLoading.value) return
-  aiChat.sendMessage({ text })
+  aiChat.sendMessage(
+    { text },
+    {
+      body: {
+        providerOptions: {
+          deepseek: {
+            thinking: { type: deepseekOptions.value.thinkingType },
+            reasoningEffort: deepseekOptions.value.reasoningEffort,
+          },
+        },
+      },
+    },
+  )
   aiInput.value = ''
 }
 
@@ -144,6 +209,7 @@ watch(
             class="flex-1"
             @keydown="aiHandleKeydown"
           />
+          <AiModelSettings v-model="deepseekOptions" :fields="deepseekFields" />
           <UButton v-if="aiLoading" color="neutral" variant="subtle" @click="aiChat.stop()">
             <UIcon name="i-lucide-square" class="size-4" />
             Stop
