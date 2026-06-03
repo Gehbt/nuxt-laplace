@@ -1,7 +1,5 @@
 {
-  "cSpell.words": [
-    "lucide"
-  ],
+  "cSpell.words": ["lucide"],
   "editor.formatOnSave": true,
   "[typescript]": {
     "editor.defaultFormatter": "oxc.oxc-vscode"
@@ -25,15 +23,7 @@
   "editor.quickSuggestions": {
     "strings": "on"
   },
-  "tailwindCSS.classAttributes": [
-    "class",
-    "ui"
-  ],
-  "tailwindCSS.experimental.classRegex": [
-    [
-      "ui:\\s*{([^)]*)\\s*}",
-      "(?:'|\"|`)([^']*)(?:'|\"|`)"
-    ]
-  ],
+  "tailwindCSS.classAttributes": ["class", "ui"],
+  "tailwindCSS.experimental.classRegex": [["ui:\\s*{([^)]*)\\s*}", "(?:'|\"|`)([^']*)(?:'|\"|`)"]],
   "js/ts.tsdk.path": "node_modules/typescript/lib"
 }
