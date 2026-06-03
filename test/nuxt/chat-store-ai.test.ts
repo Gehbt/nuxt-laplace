@@ -1,5 +1,6 @@
-import { describe, it, expect, beforeEach } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
+import { describe, it, expect, beforeEach } from 'vitest'
+
 import { useChatStore } from '../../app/stores/chat'
 
 describe('chat store — AI message handling', () => {
