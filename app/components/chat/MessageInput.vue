@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useChatStore } from '@/stores/chat'
 import userIcon from '~/assets/images/user-icon/common.png'
 
 const emit = defineEmits<{

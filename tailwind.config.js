@@ -1,10 +1,7 @@
 export default {
-  content: [
-    './app/**/*.{vue,ts}',
-    './nuxt.config.ts'
-  ],
+  content: ['./app/**/*.{vue,ts}', './nuxt.config.ts'],
   theme: {
-    extend: {}
+    extend: {},
   },
-  plugins: []
+  plugins: [],
 }

@@ -2,6 +2,11 @@
 export default defineNuxtConfig({
   modules: ['@nuxt/eslint', '@nuxt/ui', '@nuxt/test-utils', '@pinia/nuxt'],
 
+  imports: {
+    // no 'stores' dir
+    scan: false,
+  },
+
   devtools: {
     enabled: true,
   },
@@ -10,6 +15,9 @@ export default defineNuxtConfig({
 
   runtimeConfig: {
     databaseUrl: '',
+    aiGatewayApiKey: '',
+    deepseekApiKey: '',
+    deepseekBaseUrl: '',
   },
 
   routeRules: {

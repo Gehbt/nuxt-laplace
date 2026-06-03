@@ -12,7 +12,8 @@ export interface Room {
 
 export type ClientMessage =
   | { type: 'join'; roomId: string }
-  | { type: 'chat'; content: string }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  | { type: 'chat'; content: string; llmOptions?: Record<string, any> }
   | { type: 'typing' }
   | { type: 'history'; roomId: string; before?: number; limit?: number }
   | { type: 'create-room'; name: string }

@@ -1,5 +1,7 @@
 import type { ClientMessage } from '~/types/chat'
 
+import { useChatStore } from '@/stores/chat'
+
 const CLIENT_ID_KEY = 'chat-client-id'
 
 function generateId(): string {

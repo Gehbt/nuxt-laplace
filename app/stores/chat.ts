@@ -1,5 +1,12 @@
 import { defineStore } from 'pinia'
+
 import type { ChatMessage, Room, ServerMessage } from '~/types/chat'
+
+import {
+  appendCachedMessage,
+  getCachedMessages,
+  putCachedMessages,
+} from '~/composables/useChatCache'
 
 export const useChatStore = defineStore('chat', {
   state: () => ({
@@ -24,6 +31,13 @@ export const useChatStore = defineStore('chat', {
   },
 
   actions: {
+    async loadCachedMessages(roomId: string) {
+      const cached = await getCachedMessages(roomId)
+      if (cached.length > 0) {
+        this.messages[roomId] = cached
+      }
+    },
+
     handleMessage(msg: ServerMessage) {
       switch (msg.type) {
         case 'welcome':
@@ -36,6 +50,7 @@ export const useChatStore = defineStore('chat', {
             this.messages[roomId] = []
           }
           this.messages[roomId].push(msg.message)
+          appendCachedMessage(roomId, msg.message)
           break
         }
 
@@ -60,6 +75,7 @@ export const useChatStore = defineStore('chat', {
 
         case 'history':
           this.messages[this.currentRoomId] = msg.messages
+          putCachedMessages(this.currentRoomId, msg.messages)
           break
 
         case 'room-created':

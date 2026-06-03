@@ -7,6 +7,7 @@ import type { ChatMessage } from '~/types/chat'
 
 import { useChatStore } from '@/stores/chat'
 import userIcon from '~/assets/images/user-icon/common.png'
+import AiModelSettings from '~/components/chat/AiModelSettings.vue'
 import { useChat } from '~/composables/useChat'
 
 definePageMeta({ layout: 'blank' })
@@ -19,7 +20,6 @@ const { joinRoom, sendMessage, sendTyping, createRoom, stopAi } = useChat()
 
 // DeepSeek AI chat (HTTP streaming via Chat class)
 const AI_STORAGE_KEY = 'deepseek-ai-chat-messages'
-const AI_SELF_PEER_ID = '__ai_self__'
 const isDeepSeekRoom = computed(() => roomId.value === 'deepseek')
 
 const aiInput = ref('')
@@ -102,7 +102,7 @@ const aiMessagesAsChat = computed<ChatMessage[]>(() =>
         ?.filter((p): p is { type: 'text'; text: string } => p.type === 'text')
         .map((p) => p.text)
         .join('') || '',
-    peerId: m.role === 'user' ? AI_SELF_PEER_ID : 'ai:deepseek',
+    peerId: m.role === 'user' ? store.peerId.slice(0, 8) : 'ai:deepseek',
     timestamp: Date.now(),
   })),
 )
@@ -194,28 +194,30 @@ watch(
 
       <!-- DeepSeek AI Chat (same components as regular rooms) -->
       <template v-if="isDeepSeekRoom">
-        <ChatMessageList
-          :messages="aiMessagesAsChat"
-          :current-peer-id="AI_SELF_PEER_ID"
-          :typing-peer-id="aiTypingPeerId"
-        />
-        <div class="flex gap-2 p-4 border-t border-gray-200 dark:border-gray-700">
-          <UAvatar class="w-8 h-8" :src="userIcon" />
-          <div class="w-1" />
-          <UInput
-            v-model="aiInput"
-            :placeholder="aiLoading ? 'AI is thinking...' : 'Type a message...'"
-            :disabled="aiLoading"
-            class="flex-1"
-            @keydown="aiHandleKeydown"
+        <ClientOnly>
+          <ChatMessageList
+            :messages="aiMessagesAsChat"
+            :current-peer-id="store.peerId.slice(0, 8)"
+            :typing-peer-id="aiTypingPeerId"
           />
-          <AiModelSettings v-model="deepseekOptions" :fields="deepseekFields" />
-          <UButton v-if="aiLoading" color="neutral" variant="subtle" @click="aiChat.stop()">
-            <UIcon name="i-lucide-square" class="size-4" />
-            Stop
-          </UButton>
-          <UButton v-else :disabled="!aiInput.trim()" @click="aiSend"> Send </UButton>
-        </div>
+          <div class="flex gap-2 p-4 border-t border-gray-200 dark:border-gray-700">
+            <UAvatar class="w-8 h-8" :src="userIcon" />
+            <div class="w-1" />
+            <UInput
+              v-model="aiInput"
+              :placeholder="aiLoading ? 'AI is thinking...' : 'Type a message...'"
+              :disabled="aiLoading"
+              class="flex-1"
+              @keydown="aiHandleKeydown"
+            />
+            <AiModelSettings v-model="deepseekOptions" :fields="deepseekFields" />
+            <UButton v-if="aiLoading" color="neutral" variant="subtle" @click="aiChat.stop()">
+              <UIcon name="i-lucide-square" class="size-4" />
+              Stop
+            </UButton>
+            <UButton v-else :disabled="!aiInput.trim()" @click="aiSend"> Send </UButton>
+          </div>
+        </ClientOnly>
       </template>
 
       <!-- Regular Room Chat -->
