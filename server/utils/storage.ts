@@ -1,6 +1,7 @@
-import { RoomRepository } from '../repositories/room.repository'
-import { MessageRepository } from '../repositories/message.repository'
 import type { ChatMessage, Room } from '../../app/types/chat'
+
+import { MessageRepository } from '../repositories/message.repository'
+import { RoomRepository } from '../repositories/room.repository'
 
 const roomRepo = new RoomRepository()
 const messageRepo = new MessageRepository()

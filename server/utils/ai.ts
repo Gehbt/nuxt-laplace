@@ -1,11 +1,14 @@
-import { createAnthropic } from '@ai-sdk/anthropic'
+import type { DeepSeekProvider } from '@ai-sdk/deepseek'
 
-export function getDeepSeekProvider() {
+import { createDeepSeek } from '@ai-sdk/deepseek'
+
+export function getDeepSeekProvider(): DeepSeekProvider {
   const { deepseekApiKey, deepseekBaseUrl } = useRuntimeConfig()
 
-  if (!deepseekApiKey) throw new Error('Missing DEEPSEEK_API_KEY')
+  if (!deepseekApiKey)
+    throw new Error('getDeepSeekProvider Fail', { cause: 'Missing DEEPSEEK_API_KEY' })
 
-  return createAnthropic({
+  return createDeepSeek({
     baseURL: deepseekBaseUrl || undefined,
     apiKey: deepseekApiKey,
   })

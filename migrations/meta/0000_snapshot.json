@@ -47,12 +47,8 @@
           "tableFrom": "messages",
           "tableTo": "rooms",
           "schemaTo": "chat",
-          "columnsFrom": [
-            "room_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["room_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }

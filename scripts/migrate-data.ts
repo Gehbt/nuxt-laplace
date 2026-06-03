@@ -1,7 +1,9 @@
 import { readdir, readFile } from 'node:fs/promises'
+
+import type { Room } from '../app/types/chat'
+
 import { db, sql } from '../server/database/client'
 import { rooms, messages } from '../server/database/schema'
-import type { Room } from '../app/types/chat'
 
 async function migrate() {
   try {

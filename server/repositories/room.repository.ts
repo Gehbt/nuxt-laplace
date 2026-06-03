@@ -1,7 +1,9 @@
+import { eq } from 'drizzle-orm'
+
+import type { Room } from '../../app/types/chat'
+
 import { db } from '../database/client'
 import { rooms } from '../database/schema'
-import { eq } from 'drizzle-orm'
-import type { Room } from '../../app/types/chat'
 
 export class RoomRepository {
   async findAll(): Promise<Room[]> {

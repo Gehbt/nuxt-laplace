@@ -1,7 +1,9 @@
+import { and, asc, eq, lt } from 'drizzle-orm'
+
+import type { ChatMessage } from '../../app/types/chat'
+
 import { db } from '../database/client'
 import { messages } from '../database/schema'
-import { and, asc, eq, lt } from 'drizzle-orm'
-import type { ChatMessage } from '../../app/types/chat'
 
 export class MessageRepository {
   async findByRoom(roomId: string, before?: number, limit = 50): Promise<ChatMessage[]> {

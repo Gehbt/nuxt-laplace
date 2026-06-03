@@ -1,4 +1,8 @@
+import type { DeepSeekLanguageModelOptions } from '@ai-sdk/deepseek'
+
 import { streamText } from 'ai'
+import { styleText } from 'node:util'
+
 import { getDeepSeekProvider } from '../utils/ai'
 import { getMessages, addMessage } from '../utils/storage'
 
@@ -69,7 +73,13 @@ const AI_PEER_ID = 'ai:deepseek'
 const AI_ROOM_ID = 'deepseek'
 const AI_CONTEXT_LIMIT = 20
 
-async function handleAiChat(roomId: string) {
+async function handleAiChat(
+  roomId: string,
+  llmOptions: DeepSeekLanguageModelOptions = {
+    thinking: { type: 'enabled' },
+    reasoningEffort: 'high',
+  },
+) {
   if (roomId !== AI_ROOM_ID) return
 
   // Abort any existing stream for this room
@@ -110,6 +120,9 @@ async function handleAiChat(roomId: string) {
       system: 'You are a helpful assistant.',
       messages: contextMessages,
       abortSignal: controller.signal,
+      providerOptions: {
+        deepseek: llmOptions satisfies DeepSeekLanguageModelOptions,
+      },
     })
 
     for await (const chunk of result.textStream) {
@@ -315,5 +328,8 @@ export default defineWebSocketHandler({
     }
     allPeers.delete(peer.id)
     broadcastGlobal({ type: 'online-count', count: totalOnlineCount() }, peer.id)
+  },
+  error(peer, error) {
+    console.error(styleText('red', 'Error in WebSocket connection: ' + error.message))
   },
 })
