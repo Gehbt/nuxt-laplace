@@ -1,60 +1,97 @@
-# Nuxt Starter Template
+# Laplace
 
-[![Nuxt UI](https://img.shields.io/badge/Made%20with-Nuxt%20UI-00DC82?logo=nuxt&labelColor=020420)](https://ui.nuxt.com)
+Real-time chat application with AI-powered conversations, built with Nuxt 4.
 
-Use this template to get started with [Nuxt UI](https://ui.nuxt.com) quickly.
+## Features
 
-- [Live demo](https://starter-template.nuxt.dev/)
-- [Documentation](https://ui.nuxt.com/docs/getting-started/installation/nuxt)
+- **Real-time multi-user chat** — WebSocket-based rooms with typing indicators and user presence
+- **AI chat** — DeepSeek AI integration with streaming responses and configurable model settings
+- **Message persistence** — PostgreSQL storage via Drizzle ORM, IndexedDB client-side cache
+- **Dark mode** — Full dark mode support via Nuxt UI and Tailwind CSS 4
 
-<a href="https://starter-template.nuxt.dev/" target="_blank">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://ui.nuxt.com/assets/templates/nuxt/starter-dark.png">
-    <source media="(prefers-color-scheme: light)" srcset="https://ui.nuxt.com/assets/templates/nuxt/starter-light.png">
-    <img alt="Nuxt Starter Template" src="https://ui.nuxt.com/assets/templates/nuxt/starter-light.png">
-  </picture>
-</a>
+## Tech Stack
 
-> The starter template for Vue is on https://github.com/nuxt-ui-templates/starter-vue.
-
-## Quick Start
-
-```bash [Terminal]
-npm create nuxt@latest -- -t github:nuxt-ui-templates/starter
-```
-
-## Deploy your own
-
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-name=starter&repository-url=https%3A%2F%2Fgithub.com%2Fnuxt-ui-templates%2Fstarter&demo-image=https%3A%2F%2Fui.nuxt.com%2Fassets%2Ftemplates%2Fnuxt%2Fstarter-dark.png&demo-url=https%3A%2F%2Fstarter-template.nuxt.dev%2F&demo-title=Nuxt%20Starter%20Template&demo-description=A%20minimal%20template%20to%20get%20started%20with%20Nuxt%20UI.)
+- Nuxt 4 (Vue 3) + TypeScript
+- Nuxt UI + Tailwind CSS 4
+- Pinia for state management
+- Vercel AI SDK (`ai`, `@ai-sdk/deepseek`, `@ai-sdk/vue`)
+- PostgreSQL + Drizzle ORM
+- `crossws` for WebSocket
+- Bun (package manager)
 
 ## Setup
 
-Make sure to install the dependencies:
+Install dependencies:
 
 ```bash
-pnpm install
+bun install
 ```
 
-## Development Server
-
-Start the development server on `http://localhost:3000`:
+Copy `.env.example` to `.env` and fill in the values:
 
 ```bash
-pnpm dev
+cp .env.example .env
+```
+
+| Variable                  | Description                   |
+| ------------------------- | ----------------------------- |
+| `NUXT_DATABASE_URL`       | PostgreSQL connection string  |
+| `NUXT_AI_GATEWAY_API_KEY` | AI Gateway API key (optional) |
+| `NUXT_DEEPSEEK_API_KEY`   | DeepSeek API key              |
+| `NUXT_DEEPSEEK_BASE_URL`  | DeepSeek base URL (optional)  |
+
+Run database migrations:
+
+```bash
+bun run db:migrate
+```
+
+## Development
+
+Start the dev server on `http://localhost:4331`:
+
+```bash
+bun run dev
 ```
 
 ## Production
 
-Build the application for production:
-
 ```bash
-pnpm build
+bun run build
+bun run preview
 ```
 
-Locally preview production build:
+## Commands
 
-```bash
-pnpm preview
+| Command               | Description                        |
+| --------------------- | ---------------------------------- |
+| `bun run dev`         | Start dev server (port 4331)       |
+| `bun run build`       | Production build                   |
+| `bun run lint`        | oxlint + ESLint                    |
+| `bun run typecheck`   | TypeScript type checking           |
+| `bun run test`        | Run all tests                      |
+| `bun run test:unit`   | Unit tests only (node environment) |
+| `bun run test:nuxt`   | Nuxt integration tests (happy-dom) |
+| `bun run db:generate` | Generate Drizzle migrations        |
+| `bun run db:migrate`  | Run database migrations            |
+| `bun run db:push`     | Push schema to database            |
+
+## Project Structure
+
 ```
-
-Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
+app/                  # Frontend (Nuxt pages, components, composables, stores)
+  components/         # Vue components
+  composables/        # Vue composables (useChat, useChatCache)
+  pages/              # File-based routing
+  stores/             # Pinia stores
+  types/              # TypeScript type definitions
+server/               # Backend (Nitro)
+  database/           # Drizzle schema and client
+  repositories/       # Data access layer
+  routes/             # WebSocket and API routes
+  utils/              # Server utilities (AI, storage)
+test/                 # Test suites
+  unit/               # Unit tests
+  nuxt/               # Nuxt integration tests
+migrations/           # Database migrations
+```
