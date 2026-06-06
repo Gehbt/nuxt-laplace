@@ -16,3 +16,14 @@
   --color-green-900: #0a5331;
   --color-green-950: #052e16;
 }
+
+/* Laplace defaults to dark mode */
+:root {
+  color-scheme: dark;
+}
+
+/* Dark mode overrides */
+.dark {
+  --ui-bg: #09090b;
+  --ui-text: #e4e4e7;
+}

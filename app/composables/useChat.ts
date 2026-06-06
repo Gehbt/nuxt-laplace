@@ -104,7 +104,14 @@ export function useChat() {
     }
   }
 
-  onMounted(() => connect())
+  onMounted(async () => {
+    // Load cached messages from IndexedDB before connecting WS
+    // so the user sees data immediately on client-side navigation
+    if (store.currentRoomId) {
+      await store.loadCachedMessages(store.currentRoomId)
+    }
+    connect()
+  })
   onUnmounted(() => disconnect())
 
   return {

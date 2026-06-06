@@ -1,15 +1,21 @@
 <script setup lang="ts">
 useHead({
   meta: [{ name: 'viewport', content: 'width=device-width, initial-scale=1' }],
-  link: [{ rel: 'icon', href: '/favicon.ico' }],
+  link: [
+    { rel: 'icon', href: '/favicon.ico' },
+    {
+      rel: 'stylesheet',
+      href: 'https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&display=swap',
+    },
+  ],
   htmlAttrs: {
     lang: 'en',
   },
 })
 
-const title = 'Nuxt Starter Template'
+const title = 'Laplace — Real-time Chat with AI'
 const description =
-  'A production-ready starter template powered by Nuxt UI. Build beautiful, accessible, and performant applications in minutes, not hours.'
+  'A real-time chat platform with integrated AI. WebSocket-powered rooms, DeepSeek assistant, and ephemeral messaging.'
 
 useSeoMeta({
   title,
@@ -24,26 +30,25 @@ useSeoMeta({
 
 <template>
   <UApp>
-    <UHeader>
+    <UHeader :ui="{ root: 'bg-transparent backdrop-blur-md' }">
       <template #left>
-        <NuxtLink to="/">
-          <AppLogo class="w-auto h-6 shrink-0" />
+        <NuxtLink to="/" class="flex items-center gap-2.5">
+          <span class="header-logo">Laplace</span>
         </NuxtLink>
 
-        <TemplateMenu />
+        <UNavigationMenu
+          :items="[
+            { label: 'Home', to: '/', icon: 'i-lucide-home' },
+            { label: 'Chat', to: '/chat/general', icon: 'i-lucide-message-circle' },
+            { label: 'Chat With AI', to: '/chat/deepseek', icon: 'i-lucide-sparkles' },
+          ]"
+          variant="link"
+          :ui="{ link: 'text-xs', linkLeadingIcon: 'size-3.5' }"
+        />
       </template>
 
       <template #right>
         <UColorModeButton />
-
-        <UButton
-          to="https://github.com/nuxt-ui-templates/starter"
-          target="_blank"
-          icon="i-simple-icons-github"
-          aria-label="GitHub"
-          color="neutral"
-          variant="ghost"
-        />
       </template>
     </UHeader>
 
@@ -57,7 +62,9 @@ useSeoMeta({
 
     <UFooter>
       <template #left>
-        <p class="text-sm text-muted">Built with Nuxt UI • © {{ new Date().getFullYear() }}</p>
+        <p class="text-sm text-muted">
+          Laplace © {{ new Date().getFullYear() }} — Built with Nuxt, Drizzle, and the Vercel AI SDK
+        </p>
       </template>
 
       <template #right>
@@ -73,3 +80,12 @@ useSeoMeta({
     </UFooter>
   </UApp>
 </template>
+
+<style>
+.header-logo {
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-size: 1.25rem;
+  font-weight: 400;
+  letter-spacing: -0.02em;
+}
+</style>

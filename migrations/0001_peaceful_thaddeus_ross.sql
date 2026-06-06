@@ -1,0 +1,1 @@
+CREATE INDEX "messages_room_timestamp_idx" ON "chat"."messages" USING btree ("room_id","timestamp");

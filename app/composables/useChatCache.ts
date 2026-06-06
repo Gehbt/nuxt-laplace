@@ -1,6 +1,6 @@
 import { openDB } from 'idb'
 
-import type { ChatMessage } from '~/types/chat'
+import type { ChatMessage } from '../types/chat'
 
 const DB_NAME = 'laplace-chat'
 const DB_VERSION = 1

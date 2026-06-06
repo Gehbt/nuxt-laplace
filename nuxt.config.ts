@@ -1,6 +1,10 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
-  modules: ['@nuxt/eslint', '@nuxt/ui', '@nuxt/test-utils', '@pinia/nuxt'],
+  modules: ['@nuxt/eslint', '@nuxt/ui', '@nuxt/test-utils', '@pinia/nuxt', '@vueuse/nuxt'],
+
+  colorMode: {
+    preference: 'dark',
+  },
 
   imports: {
     // no 'stores' dir
@@ -9,6 +13,10 @@ export default defineNuxtConfig({
 
   devtools: {
     enabled: true,
+
+    timeline: {
+      enabled: true,
+    },
   },
 
   css: ['~/assets/css/main.css'],

@@ -27,7 +27,7 @@ watch(
       <ChatMessageBubble :message="msg" :is-own="msg.peerId === currentPeerId" />
     </div>
     <ChatTypingIndicator :peer-id="typingPeerId" />
-    <div v-if="messages.length === 0" class="text-center text-gray-400 mt-8">
+    <div v-if="messages.length === 0" class="text-center text-dimmed mt-8">
       No messages yet. Say hello!
     </div>
   </div>

@@ -36,7 +36,7 @@ function handleInput() {
 </script>
 
 <template>
-  <div class="flex gap-2 p-4 border-t border-gray-200 dark:border-gray-700">
+  <div class="flex gap-2 p-4 border-t border-default">
     <UAvatar class="w-8 h-8" :src="userIcon" />
     <div class="w-1" />
     <UInput

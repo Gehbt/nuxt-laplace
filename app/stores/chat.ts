@@ -1,12 +1,12 @@
 import { defineStore } from 'pinia'
 
-import type { ChatMessage, Room, ServerMessage } from '~/types/chat'
+import type { ChatMessage, Room, ServerMessage } from '../types/chat'
 
 import {
   appendCachedMessage,
   getCachedMessages,
   putCachedMessages,
-} from '~/composables/useChatCache'
+} from '../composables/useChatCache'
 
 export const useChatStore = defineStore('chat', {
   state: () => ({

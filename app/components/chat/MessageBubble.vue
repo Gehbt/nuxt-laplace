@@ -15,11 +15,7 @@ const time = computed(() => new Date(props.message.timestamp).toLocaleTimeString
   <div class="flex gap-2" :class="isOwn ? 'flex-row-reverse' : 'flex-row'">
     <div
       class="max-w-[75%] rounded-lg px-3 py-2"
-      :class="
-        isOwn
-          ? 'bg-green-600 text-white'
-          : 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100'
-      "
+      :class="isOwn ? 'bg-green-500 text-white' : 'bg-elevated text-default'"
     >
       <div class="text-xs opacity-70 mb-1">
         <template v-if="isAi">
