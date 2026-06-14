@@ -69,8 +69,8 @@ describe('chatStorage', () => {
       await addMessage(roomId, [{ type: 'text', text: 'Second' }], 'peer-2')
 
       const result = await getMessages(roomId)
-      expect(result[0].content).toEqual([{ type: 'text', text: 'First' }])
-      expect(result[1].content).toEqual([{ type: 'text', text: 'Second' }])
+      expect(result[0]!.content).toEqual([{ type: 'text', text: 'First' }])
+      expect(result[1]!.content).toEqual([{ type: 'text', text: 'Second' }])
     })
 
     it('filters messages by before timestamp', async () => {
@@ -82,7 +82,7 @@ describe('chatStorage', () => {
 
       const result = await getMessages(roomId, msg2.timestamp)
       expect(result).toHaveLength(1)
-      expect(result[0].content).toEqual([{ type: 'text', text: 'First' }])
+      expect(result[0]!.content).toEqual([{ type: 'text', text: 'First' }])
     })
 
     it('limits returned messages', async () => {
