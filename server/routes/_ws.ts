@@ -6,6 +6,7 @@ import { styleText } from 'node:util'
 import type { MessagePart } from '../../app/types/chat'
 
 import { getDeepSeekProvider } from '../utils/ai'
+import { buildAiContextMessages } from '../utils/ai-context'
 import { getMessages, addMessage } from '../utils/storage'
 
 // roomId → Map<clientId, peerCount>
@@ -96,30 +97,7 @@ async function handleAiChat(
 
   try {
     const history = await getMessages(roomId, undefined, AI_CONTEXT_LIMIT)
-    const contextMessages = history.map((msg) => {
-      if (msg.peerId === AI_PEER_ID) {
-        const text = msg.content
-          .filter((p): p is Extract<MessagePart, { type: 'text' }> => p.type === 'text')
-          .map((p) => p.text)
-          .join('')
-        return { role: 'assistant' as const, content: text }
-      }
-
-      const parts = msg.content.map((part) => {
-        if (part.type === 'image') {
-          return { type: 'image' as const, image: part.url }
-        }
-        return { type: 'text' as const, text: part.text }
-      })
-
-      if (parts.length === 1) {
-        const single = parts[0]!
-        if (single.type === 'text') {
-          return { role: 'user' as const, content: single.text }
-        }
-      }
-      return { role: 'user' as const, content: parts }
-    })
+    const contextMessages = buildAiContextMessages(history, AI_PEER_ID)
 
     const aiMsgId = crypto.randomUUID()
     const startTime = Date.now()
