@@ -1,6 +1,6 @@
 # Multimodal Message Content — 实现记录
 
-执行计划：[2026-06-11-multimodal-message-content.md](superpowers/plans/2026-06-11-multimodal-message-content.md)
+执行计划：[2026-06-11-multimodal-message-content.md](./2026-06-11-multimodal-message-content.md)
 分支：`feat/multimodal-content`
 
 本文记录执行过程中**偏离 plan 的实现决策**与**顺带修复的预存 bug**，供后续 review 与维护参考。
