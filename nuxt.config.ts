@@ -2,10 +2,6 @@
 export default defineNuxtConfig({
   modules: ['@nuxt/eslint', '@nuxt/ui', '@nuxt/test-utils', '@pinia/nuxt', '@vueuse/nuxt'],
 
-  colorMode: {
-    preference: 'dark',
-  },
-
   imports: {
     // no 'stores' dir
     scan: false,
@@ -20,6 +16,10 @@ export default defineNuxtConfig({
   },
 
   css: ['~/assets/css/main.css'],
+
+  colorMode: {
+    preference: 'dark',
+  },
 
   runtimeConfig: {
     databaseUrl: '',
