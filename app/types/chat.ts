@@ -1,6 +1,18 @@
+export interface TextPart {
+  type: 'text'
+  text: string
+}
+
+export interface ImagePart {
+  type: 'image'
+  url: string
+}
+
+export type MessagePart = TextPart | ImagePart
+
 export interface ChatMessage {
   id: string
-  content: string
+  content: MessagePart[]
   peerId: string
   timestamp: number
 }
@@ -12,8 +24,7 @@ export interface Room {
 
 export type ClientMessage =
   | { type: 'join'; roomId: string }
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  | { type: 'chat'; content: string; llmOptions?: Record<string, any> }
+  | { type: 'chat'; content: MessagePart[]; llmOptions?: Record<string, unknown> }
   | { type: 'typing' }
   | { type: 'history'; roomId: string; before?: number; limit?: number }
   | { type: 'create-room'; name: string }

@@ -3,7 +3,7 @@ import { openDB } from 'idb'
 import type { ChatMessage } from '../types/chat'
 
 const DB_NAME = 'laplace-chat'
-const DB_VERSION = 1
+const DB_VERSION = 2
 const STORE_NAME = 'messages'
 const MAX_MESSAGES_PER_ROOM = 200
 
@@ -13,8 +13,19 @@ interface CachedMessage extends ChatMessage {
 
 function getDb() {
   return openDB<CachedMessage>(DB_NAME, DB_VERSION, {
-    upgrade(db) {
-      if (!db.objectStoreNames.contains(STORE_NAME)) {
+    upgrade(db, oldVersion) {
+      if (oldVersion < 1) {
+        const store = db.createObjectStore(STORE_NAME, { keyPath: 'id' })
+        store.createIndex('roomId', 'roomId', { unique: false })
+        store.createIndex('roomId_timestamp', ['roomId', 'timestamp'], {
+          unique: false,
+        })
+      }
+      // v1 → v2: content changed from string to MessagePart[]. IndexedDB is
+      // schemaless, but cached v1 messages have string content that won't render.
+      // Recreate the store to drop stale rows.
+      if (oldVersion === 1) {
+        db.deleteObjectStore(STORE_NAME)
         const store = db.createObjectStore(STORE_NAME, { keyPath: 'id' })
         store.createIndex('roomId', 'roomId', { unique: false })
         store.createIndex('roomId_timestamp', ['roomId', 'timestamp'], {

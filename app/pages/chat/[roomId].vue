@@ -3,7 +3,7 @@ import type { Chat as ChatType } from '@ai-sdk/vue'
 import type { UIMessage } from 'ai'
 
 import type { AiModelSettingField } from '~/components/chat/AiModelSettings.vue'
-import type { ChatMessage } from '~/types/chat'
+import type { ChatMessage, MessagePart } from '~/types/chat'
 
 import userIcon from '~/assets/images/user-icon/common.png'
 import AiModelSettings from '~/components/chat/AiModelSettings.vue'
@@ -80,11 +80,15 @@ const aiMessagesAsChat = computed<ChatMessage[]>(() => {
   if (!chat) return []
   return chat.messages.map((m) => ({
     id: m.id,
-    content:
-      m.parts
-        ?.filter((p): p is { type: 'text'; text: string } => p.type === 'text')
-        .map((p) => p.text)
-        .join('') || '',
+    content: (m.parts || []).flatMap((p): MessagePart[] => {
+      if (p.type === 'text' && p.text) {
+        return [{ type: 'text', text: p.text }]
+      }
+      if (p.type === 'file' && p.url) {
+        return [{ type: 'image', url: p.url }]
+      }
+      return []
+    }),
     peerId: m.role === 'user' ? store.peerId.slice(0, 8) : 'ai:deepseek',
     timestamp: Date.now(),
   }))

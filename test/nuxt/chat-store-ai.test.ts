@@ -31,7 +31,7 @@ describe('chat store — AI message handling', () => {
       expect(store.currentMessages).toHaveLength(1)
       expect(store.currentMessages[0]).toEqual({
         id: 'msg-1',
-        content: '',
+        content: [],
         peerId: 'ai:deepseek',
         timestamp: 1000,
       })
@@ -67,7 +67,9 @@ describe('chat store — AI message handling', () => {
       })
 
       const msg = store.currentMessages.find((m) => m.id === 'msg-1')!
-      expect(msg.content).toBe('Hello world')
+      const textPart = msg.content.find((p) => p.type === 'text')
+      expect(textPart).toBeDefined()
+      expect((textPart as { type: 'text'; text: string }).text).toBe('Hello world')
     })
 
     it('ignores chunks for unknown message ids', () => {

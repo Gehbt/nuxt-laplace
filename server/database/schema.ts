@@ -1,5 +1,7 @@
 import { relations } from 'drizzle-orm'
-import { bigint, index, pgSchema, text, uuid, varchar } from 'drizzle-orm/pg-core'
+import { bigint, index, jsonb, pgSchema, uuid, varchar } from 'drizzle-orm/pg-core'
+
+import type { MessagePart } from '../../app/types/chat'
 
 const chatSchema = pgSchema('chat')
 
@@ -16,7 +18,7 @@ export const messages = chatSchema.table(
   'messages',
   {
     id: uuid('id').defaultRandom().primaryKey(),
-    content: text('content').notNull(),
+    content: jsonb('content').notNull().$type<MessagePart[]>(),
     peerId: varchar('peer_id').notNull(),
     timestamp: bigint('timestamp', { mode: 'number' }).notNull(),
     roomId: varchar('room_id')

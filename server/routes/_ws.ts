@@ -3,6 +3,8 @@ import type { DeepSeekLanguageModelOptions } from '@ai-sdk/deepseek'
 import { streamText } from 'ai'
 import { styleText } from 'node:util'
 
+import type { MessagePart } from '../../app/types/chat'
+
 import { getDeepSeekProvider } from '../utils/ai'
 import { getMessages, addMessage } from '../utils/storage'
 
@@ -94,10 +96,30 @@ async function handleAiChat(
 
   try {
     const history = await getMessages(roomId, undefined, AI_CONTEXT_LIMIT)
-    const contextMessages = history.map((msg) => ({
-      role: (msg.peerId === AI_PEER_ID ? 'assistant' : 'user') as 'assistant' | 'user',
-      content: msg.content,
-    }))
+    const contextMessages = history.map((msg) => {
+      if (msg.peerId === AI_PEER_ID) {
+        const text = msg.content
+          .filter((p): p is Extract<MessagePart, { type: 'text' }> => p.type === 'text')
+          .map((p) => p.text)
+          .join('')
+        return { role: 'assistant' as const, content: text }
+      }
+
+      const parts = msg.content.map((part) => {
+        if (part.type === 'image') {
+          return { type: 'image' as const, image: part.url }
+        }
+        return { type: 'text' as const, text: part.text }
+      })
+
+      if (parts.length === 1) {
+        const single = parts[0]!
+        if (single.type === 'text') {
+          return { role: 'user' as const, content: single.text }
+        }
+      }
+      return { role: 'user' as const, content: parts }
+    })
 
     const aiMsgId = crypto.randomUUID()
     const startTime = Date.now()
@@ -146,7 +168,7 @@ async function handleAiChat(
       })
 
       // Store the complete AI message in DB
-      await addMessage(roomId, fullContent, AI_PEER_ID)
+      await addMessage(roomId, [{ type: 'text', text: fullContent }], AI_PEER_ID)
     }
   } catch (err) {
     if (!controller.signal.aborted) {
@@ -175,7 +197,7 @@ export default defineWebSocketHandler({
     let data: {
       type: string
       roomId?: string
-      content?: string
+      content?: MessagePart[]
       name?: string
       before?: number
       limit?: number
@@ -239,7 +261,7 @@ export default defineWebSocketHandler({
 
       case 'chat': {
         const roomId = peerRooms.get(peer.id)
-        if (!roomId || !data.content) return
+        if (!roomId || !data.content || data.content.length === 0) return
         const msg = await addMessage(roomId, data.content, userId)
         peer.send({ type: 'chat', message: msg })
         broadcastToRoom(roomId, { type: 'chat', message: msg }, peer.id)

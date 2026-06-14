@@ -9,6 +9,17 @@ const props = defineProps<{
 const isAi = computed(() => props.message.peerId === 'ai:deepseek')
 const shortId = computed(() => props.message.peerId.slice(0, 8))
 const time = computed(() => new Date(props.message.timestamp).toLocaleTimeString())
+
+const hasContent = computed(() =>
+  props.message.content.some((p) => {
+    if (p.type === 'text') return p.text.length > 0
+    return true
+  }),
+)
+
+function openFullscreen(e: MouseEvent) {
+  ;(e.currentTarget as HTMLImageElement).requestFullscreen?.()
+}
 </script>
 
 <template>
@@ -27,10 +38,23 @@ const time = computed(() => new Date(props.message.timestamp).toLocaleTimeString
         <template v-else> User {{ shortId }} </template>
         <span class="ml-2">{{ time }}</span>
       </div>
-      <div class="wrap-break-word">
-        {{ message.content
-        }}<span
-          v-if="isAi && !message.content"
+      <div class="space-y-1">
+        <template v-for="(part, i) in message.content" :key="i">
+          <div v-if="part.type === 'text'" class="wrap-break-word">
+            {{ part.text }}
+          </div>
+          <div v-else-if="part.type === 'image'" class="mt-1">
+            <img
+              :src="part.url"
+              alt="Shared image"
+              class="max-w-full max-h-80 rounded-md cursor-pointer"
+              loading="lazy"
+              @click="openFullscreen"
+            />
+          </div>
+        </template>
+        <span
+          v-if="isAi && !hasContent"
           class="inline-block w-2 h-4 ml-0.5 bg-current animate-pulse"
         />
       </div>

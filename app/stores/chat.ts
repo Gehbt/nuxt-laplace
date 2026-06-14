@@ -108,7 +108,7 @@ export const useChatStore = defineStore('chat', {
           this.messages[msg.roomId] = roomMsgs
           roomMsgs.push({
             id: msg.id,
-            content: '',
+            content: [],
             peerId: msg.peerId,
             timestamp: msg.timestamp,
           })
@@ -120,7 +120,12 @@ export const useChatStore = defineStore('chat', {
           if (chunkMessages) {
             const target = chunkMessages.find((m) => m.id === msg.id)
             if (target) {
-              target.content += msg.text
+              const textPart = target.content.find((p) => p.type === 'text')
+              if (textPart && textPart.type === 'text') {
+                textPart.text += msg.text
+              } else {
+                target.content.push({ type: 'text', text: msg.text })
+              }
             }
           }
           break

@@ -5,8 +5,8 @@ import { getRooms, createRoom, getMessages, addMessage } from '../../server/util
 
 describe('chatStorage', () => {
   beforeEach(async () => {
-    await sql`DELETE FROM messages`
-    await sql`DELETE FROM rooms`
+    await sql`DELETE FROM chat.messages`
+    await sql`DELETE FROM chat.rooms`
   })
 
   describe('rooms', () => {
@@ -51,9 +51,9 @@ describe('chatStorage', () => {
     })
 
     it('adds a message and retrieves it', async () => {
-      const msg = await addMessage(roomId, 'Hello!', 'peer-1')
+      const msg = await addMessage(roomId, [{ type: 'text', text: 'Hello!' }], 'peer-1')
       expect(msg).toMatchObject({
-        content: 'Hello!',
+        content: [{ type: 'text', text: 'Hello!' }],
         peerId: 'peer-1',
       })
       expect(msg.id).toBeDefined()
@@ -65,29 +65,29 @@ describe('chatStorage', () => {
     })
 
     it('returns messages sorted by timestamp', async () => {
-      await addMessage(roomId, 'First', 'peer-1')
-      await addMessage(roomId, 'Second', 'peer-2')
+      await addMessage(roomId, [{ type: 'text', text: 'First' }], 'peer-1')
+      await addMessage(roomId, [{ type: 'text', text: 'Second' }], 'peer-2')
 
       const result = await getMessages(roomId)
-      expect(result[0].content).toBe('First')
-      expect(result[1].content).toBe('Second')
+      expect(result[0].content).toEqual([{ type: 'text', text: 'First' }])
+      expect(result[1].content).toEqual([{ type: 'text', text: 'Second' }])
     })
 
     it('filters messages by before timestamp', async () => {
-      await addMessage(roomId, 'First', 'peer-1')
+      await addMessage(roomId, [{ type: 'text', text: 'First' }], 'peer-1')
       await new Promise((r) => setTimeout(r, 5))
-      const msg2 = await addMessage(roomId, 'Second', 'peer-1')
+      const msg2 = await addMessage(roomId, [{ type: 'text', text: 'Second' }], 'peer-1')
       await new Promise((r) => setTimeout(r, 5))
-      await addMessage(roomId, 'Third', 'peer-1')
+      await addMessage(roomId, [{ type: 'text', text: 'Third' }], 'peer-1')
 
       const result = await getMessages(roomId, msg2.timestamp)
       expect(result).toHaveLength(1)
-      expect(result[0].content).toBe('First')
+      expect(result[0].content).toEqual([{ type: 'text', text: 'First' }])
     })
 
     it('limits returned messages', async () => {
       for (let i = 0; i < 10; i++) {
-        await addMessage(roomId, `Msg ${i}`, 'peer-1')
+        await addMessage(roomId, [{ type: 'text', text: `Msg ${i}` }], 'peer-1')
       }
 
       const result = await getMessages(roomId, undefined, 3)

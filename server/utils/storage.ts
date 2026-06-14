@@ -1,4 +1,4 @@
-import type { ChatMessage, Room } from '../../app/types/chat'
+import type { ChatMessage, MessagePart, Room } from '../../app/types/chat'
 
 import { MessageRepository } from '../repositories/message.repository'
 import { RoomRepository } from '../repositories/room.repository'
@@ -24,7 +24,7 @@ export async function getMessages(
 
 export async function addMessage(
   roomId: string,
-  content: string,
+  content: MessagePart[],
   peerId: string,
 ): Promise<ChatMessage> {
   return messageRepo.create(roomId, content, peerId)

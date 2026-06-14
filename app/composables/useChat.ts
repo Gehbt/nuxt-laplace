@@ -1,4 +1,4 @@
-import type { ClientMessage } from '~/types/chat'
+import type { ClientMessage, MessagePart } from '~/types/chat'
 
 import { useChatStore } from '@/stores/chat'
 
@@ -72,7 +72,7 @@ export function useChat() {
     send({ type: 'join', roomId })
   }
 
-  function sendMessage(content: string) {
+  function sendMessage(content: MessagePart[]) {
     send({ type: 'chat', content })
   }
 

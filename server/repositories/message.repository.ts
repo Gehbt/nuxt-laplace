@@ -1,6 +1,6 @@
 import { and, asc, eq, lt } from 'drizzle-orm'
 
-import type { ChatMessage } from '../../app/types/chat'
+import type { ChatMessage, MessagePart } from '../../app/types/chat'
 
 import { db } from '../database/client'
 import { messages } from '../database/schema'
@@ -20,7 +20,7 @@ export class MessageRepository {
       .limit(limit)
   }
 
-  async create(roomId: string, content: string, peerId: string): Promise<ChatMessage> {
+  async create(roomId: string, content: MessagePart[], peerId: string): Promise<ChatMessage> {
     const [message] = await db
       .insert(messages)
       .values({ roomId, content, peerId, timestamp: Date.now() })
