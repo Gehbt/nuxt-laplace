@@ -31,3 +31,7 @@ coverage/
 # Chat data
 data/
 think-history/
+
+# Uploaded files (user-generated images)
+uploads/*
+!uploads/.gitkeep

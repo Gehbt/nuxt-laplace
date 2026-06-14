@@ -43,6 +43,7 @@ export default defineNuxtConfig({
     experimental: {
       websocket: true,
     },
+    publicAssets: [{ dir: 'uploads', baseURL: '/uploads', maxAge: 60 * 60 * 24 * 365 }],
   },
   vite: {
     optimizeDeps: {
