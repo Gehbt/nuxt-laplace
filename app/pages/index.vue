@@ -10,11 +10,27 @@ const heroVisible = ref(false)
 const featuresVisible = ref(false)
 const roomsVisible = ref(false)
 
+const featuresRef = ref<HTMLElement>()
+const roomsRef = ref<HTMLElement>()
+
 onMounted(() => {
-  // Staggered entrance
-  setTimeout(() => (heroVisible.value = true), 100)
-  setTimeout(() => (featuresVisible.value = true), 600)
-  setTimeout(() => (roomsVisible.value = true), 1000)
+  window.setTimeout(() => (heroVisible.value = true), 100)
+
+  const observer = new IntersectionObserver(
+    (entries) => {
+      for (const entry of entries) {
+        if (!entry.isIntersecting) continue
+        if (entry.target === featuresRef.value) featuresVisible.value = true
+        if (entry.target === roomsRef.value) roomsVisible.value = true
+      }
+    },
+    { threshold: 0.15 },
+  )
+
+  if (featuresRef.value) observer.observe(featuresRef.value)
+  if (roomsRef.value) observer.observe(roomsRef.value)
+
+  onUnmounted(() => observer.disconnect())
 })
 
 const features = [
@@ -136,7 +152,7 @@ const floatingOrbs = Array.from({ length: 5 }, (_, i) => ({
     </section>
 
     <!-- ===== FEATURES ===== -->
-    <section class="features" :class="{ 'is-visible': featuresVisible }">
+    <section ref="featuresRef" class="features" :class="{ 'is-visible': featuresVisible }">
       <div class="features__inner">
         <div
           v-for="(feature, i) in features"
@@ -154,7 +170,12 @@ const floatingOrbs = Array.from({ length: 5 }, (_, i) => ({
     </section>
 
     <!-- ===== ROOMS ===== -->
-    <section v-if="rooms?.length" class="rooms" :class="{ 'is-visible': roomsVisible }">
+    <section
+      v-if="rooms?.length"
+      ref="roomsRef"
+      class="rooms"
+      :class="{ 'is-visible': roomsVisible }"
+    >
       <h2 class="rooms__heading">Active rooms</h2>
       <div class="rooms__grid">
         <NuxtLink v-for="room in rooms" :key="room.id" :to="`/chat/${room.id}`" class="room-card">
